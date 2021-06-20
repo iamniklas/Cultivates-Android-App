@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "196697317520",
+    "project_id": "cultivatesapi",
+    "storage_bucket": "cultivatesapi.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:196697317520:android:362d22595d36b6dedef815",
+        "android_client_info": {
+          "package_name": "de.niklasenglmeier.cultivates"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "196697317520-2lnpo5k5knpd9m2c61igddceojb7e3b9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DaD-SGT_3WE4JOWUkgtShLmkREMvtRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "196697317520-2lnpo5k5knpd9m2c61igddceojb7e3b9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
