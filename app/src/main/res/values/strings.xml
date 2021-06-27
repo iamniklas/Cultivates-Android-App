@@ -1,11 +1,14 @@
 <resources>
     <string name="app_name">Cultivates</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="bar_chart_info">Sensor Overview</string>
+    <string name="chart_y_label">Moisture in %</string>
     <string name="last_time_watered">Last time watered</string>
+    <string name="valve_control_headline">Manual Valve Control</string>
+    <string name="button_open_valve">Open Valve</string>
     <string name="nfc_info">Narrow an NFC tag to get single or multi sensor data or to control valves manually.</string>
+
+    <string name="notification_sensor_data_fetched">Sensor data fetched</string>
 
     <string name="dialog_positive_button">OK</string>
 </resources>

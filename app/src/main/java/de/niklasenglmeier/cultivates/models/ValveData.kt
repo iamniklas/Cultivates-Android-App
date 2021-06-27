@@ -6,7 +6,7 @@ class ValveData {
     var id = 0
 
     @SerializedName("last_time_watered")
-    var lastTimeWatered = 0
+    var lastTimeWatered = 0L
 
     @SerializedName("schedule_watering")
     var scheduleWatering: Boolean? = null

@@ -21,6 +21,14 @@ class SensorChartFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_sensor_chart, container, false)
 
         chartView = view.findViewById(R.id.bar_chart)
+        chartView.apply {
+            setTouchEnabled(false)
+            isDragEnabled = false
+            setScaleEnabled(false)
+            isScaleXEnabled = false
+            isScaleYEnabled = false
+            setPinchZoom(false)
+        }
 
         return view
     }
@@ -29,18 +37,21 @@ class SensorChartFragment : Fragment() {
         data = _data.toList()
 
         //Add bar entries from SensorValue Array
-        for (i in 1 until _data.size) {
-            val barEntry = BarEntry(i.toFloat(), _data[i].value.toFloat())
+        for (i in _data.indices) {
+            val barEntry = BarEntry((i.toFloat()+1), (_data[i].value / 1023.0f) * 100.0f)
             entrys.add(barEntry)
         }
 
         chartView.description.isEnabled = false
 
-        val bes = BarDataSet(entrys, "Moisture")
+        val bes = BarDataSet(entrys, getString(R.string.chart_y_label))
 
         chartView.data = BarData(bes)
 
+        //Force view to update
+        chartView.invalidate()
+
         //User feedback
-        Toast.makeText(activity?.applicationContext, "Sensor data fetched", Toast.LENGTH_SHORT).show()
+        Toast.makeText(activity?.applicationContext, getString(R.string.notification_sensor_data_fetched), Toast.LENGTH_SHORT).show()
     }
 }

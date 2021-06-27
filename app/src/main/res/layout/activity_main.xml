@@ -21,7 +21,8 @@
                 android:id="@+id/textview_barinfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/bar_chart_info" />
+                android:text="@string/bar_chart_info"
+                android:textAlignment="center" />
 
             <fragment
                 android:id="@+id/fragment_sensorchart"
@@ -55,7 +56,7 @@
 
             <fragment
                 android:id="@+id/fragment"
-                android:name="de.niklasenglmeier.cultivates.CommandFragment"
+                android:name="de.niklasenglmeier.cultivates.ManualValveControlFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
