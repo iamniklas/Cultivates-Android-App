@@ -65,6 +65,9 @@ class ManualValveControlFragment : Fragment(), View.OnClickListener, View.OnLong
             }
         }
 
+        if (targetDuration < 0)
+            targetDuration = 0
+
         updateFragment()
     }
 
@@ -111,6 +114,8 @@ class ManualValveControlFragment : Fragment(), View.OnClickListener, View.OnLong
                         return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response))
                     }
                 }
+
+
 
         queue.add(stringRequest)
     }

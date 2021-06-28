@@ -1,8 +1,10 @@
 package de.niklasenglmeier.cultivates
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.*
@@ -45,6 +47,8 @@ class SensorChartFragment : Fragment() {
         chartView.description.isEnabled = false
 
         val bes = BarDataSet(entrys, getString(R.string.chart_y_label))
+        val color = ContextCompat.getColor(requireActivity().applicationContext, R.color.light_blue_400)
+        bes.color = color
 
         chartView.data = BarData(bes)
 

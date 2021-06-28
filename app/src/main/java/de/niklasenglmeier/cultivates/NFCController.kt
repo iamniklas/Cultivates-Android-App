@@ -19,7 +19,7 @@ class NFCController(activity: Activity, _callbacks: INFCCallbacks? = null) {
 
     init {
         if(mNFCAdapter == null) {
-            Toast.makeText(activity.applicationContext, "No NFC Support", Toast.LENGTH_SHORT).show()
+            callbacks!!.onNFCSupportNotGiven()
         }
         else {
             readFromIntent(activity.intent)

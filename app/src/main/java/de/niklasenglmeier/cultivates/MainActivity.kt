@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -15,16 +16,12 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
-import com.google.type.DateTime
 import de.niklasenglmeier.cultivates.models.EndpointDefinition
 import de.niklasenglmeier.cultivates.models.SensorData
 import de.niklasenglmeier.cultivates.models.ValveData
 import org.json.JSONException
-import org.json.JSONObject
-import java.io.UnsupportedEncodingException
 import java.math.BigDecimal
 import java.math.RoundingMode
-
 
 class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRefreshListener {
 
@@ -38,6 +35,7 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
 
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var chartFragment: SensorChartFragment
+    private lateinit var nfcInteractionText: TextView
     private lateinit var lastTimeWateredText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,17 +43,17 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        nfcController = NFCController(this, this)
-
-        lastTimeWateredText = findViewById(R.id.textview_lasttimewateredvalue)
-
         swipeRefreshLayout = findViewById(R.id.swiperefreshlayout_main)
         swipeRefreshLayout.setOnRefreshListener(this)
         chartFragment = supportFragmentManager.findFragmentById(R.id.fragment_sensorchart) as SensorChartFragment
+        nfcInteractionText = findViewById(R.id.textview_nfcinfo)
+        lastTimeWateredText = findViewById(R.id.textview_lasttimewateredvalue)
+
+        nfcController = NFCController(this, this)
 
         //Request all sensor data via http
         val queue = Volley.newRequestQueue(this)
-        val httpRequest = StringRequest(
+        val sensorRequest = StringRequest(
                 Request.Method.GET,
                 "$hostname/cultivates/api/sensors?password=${httpParameters["password"]}",
                 { response ->
@@ -68,7 +66,6 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
                 "$hostname/cultivates/api/valve?password=${httpParameters["password"]}",
                 { response ->
                     run {
-                        Log.d("cultivates", response)
                         val valveData = Gson().fromJson(response, Array<ValveData>::class.java)
                         val sdf = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
                         val date = java.util.Date(valveData.first().lastTimeWatered * 1000)
@@ -78,7 +75,7 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
                 { }
         )
 
-        queue.add(httpRequest)
+        queue.add(sensorRequest)
         queue.add(valveRequest)
     }
 
@@ -147,7 +144,7 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
                             //Multi Sensor
                             TargetDevice.Sensor -> {
                                 val responseObject = Gson().fromJson(response, Array<SensorData>::class.java)
-                                dialogMessage += "Sensor(s) report the following values:\n"
+                                dialogMessage += "Sensors report the following values:\n"
                                 for (i in responseObject.indices) {
                                     dialogMessage += "Sensor ${responseObject[i].id}: ${BigDecimal(((responseObject[i].value / 1023.0f).coerceAtMost(1.0f) * 100.0f).toDouble()).setScale(1, RoundingMode.CEILING)}%\n"
                                 }
@@ -231,6 +228,12 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
         } catch (e: JSONException) {
             e.printStackTrace()
         }
+    }
+
+    //Gets called if phone does not support NFC
+    override fun onNFCSupportNotGiven() {
+        Toast.makeText(applicationContext, getString(R.string.notification_no_nfc_support), Toast.LENGTH_SHORT).show()
+        nfcInteractionText.visibility = View.GONE
     }
 
     //Callback for NFC Controller
