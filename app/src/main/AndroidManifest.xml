@@ -13,8 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Cultivates"
         android:usesCleartextTraffic="true">
-        <activity android:name=".MainActivity"
-            android:screenOrientation="portrait">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

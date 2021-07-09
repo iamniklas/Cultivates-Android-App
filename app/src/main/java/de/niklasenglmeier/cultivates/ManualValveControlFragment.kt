@@ -1,7 +1,6 @@
 package de.niklasenglmeier.cultivates
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,15 +11,15 @@ import com.android.volley.toolbox.HttpHeaderParser
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import java.nio.charset.Charset
-
+import kotlin.jvm.Throws
 
 class ManualValveControlFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
-    lateinit var buttonDecreaseDuration: Button
-    lateinit var buttonIncreaseDuration: Button
-    lateinit var textDuration: TextView
-    var targetDuration = 0
-    lateinit var buttonOpenValve: Button
+    private lateinit var buttonDecreaseDuration: Button
+    private lateinit var buttonIncreaseDuration: Button
+    private lateinit var textDuration: TextView
+    private var targetDuration = 0
+    private lateinit var buttonOpenValve: Button
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -71,22 +70,13 @@ class ManualValveControlFragment : Fragment(), View.OnClickListener, View.OnLong
         updateFragment()
     }
 
-    fun makeRequest(duration: Int) {
+    private fun makeRequest(duration: Int) {
         val queue = Volley.newRequestQueue(activity)
         val url = "http://000raspberry.ddns.net/cultivates/api/valve?password=12345678"
+
         if (duration == 0)
             return
 
-        val httpRequest = StringRequest(
-                Request.Method.POST,
-                url,
-                {
-                    //response -> chartFragment.setData(Gson().fromJson(response, Array<SensorValue>::class.java))
-                },
-                {}
-        )
-
-        val URL = ""
         val requestBody = "{\"id\": 1, \"schedule_watering\": true, \"schedule_watering_duration\": $duration}"
 
         val stringRequest: StringRequest = object : StringRequest(
@@ -106,16 +96,10 @@ class ManualValveControlFragment : Fragment(), View.OnClickListener, View.OnLong
                     }
 
                     override fun parseNetworkResponse(response: NetworkResponse): Response<String> {
-                        var responseString = ""
-                        if (response != null) {
-                            responseString = response.statusCode.toString()
-                            // can get more details such as response.headers
-                        }
+                        val responseString = response.statusCode.toString()
                         return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response))
                     }
                 }
-
-
 
         queue.add(stringRequest)
     }

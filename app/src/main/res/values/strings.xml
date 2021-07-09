@@ -11,5 +11,9 @@
     <string name="notification_no_nfc_support">Phone does not support NFC</string>
     <string name="notification_sensor_data_fetched">Sensor data fetched</string>
 
+    <string name="dialog_network_fail_headline">Network error</string>
+    <string name="dialog_network_fail_content">An error occurred while loading sensor or valve data. This can either be due to a cell phone that is not connected or the central server is offline. \nIn the first case, please connect your device to the Internet. \nIn the second case, please try again later.</string>
     <string name="dialog_positive_button">OK</string>
+
+    <string name="last_time_watered_format">dd.MM.yyyy HH:mm:ss</string>
 </resources>

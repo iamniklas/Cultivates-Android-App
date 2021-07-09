@@ -3,7 +3,6 @@ package de.niklasenglmeier.cultivates
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -53,30 +52,9 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
 
         //Request all sensor data via http
         val queue = Volley.newRequestQueue(this)
-        val sensorRequest = StringRequest(
-                Request.Method.GET,
-                "$hostname/cultivates/api/sensors?password=${httpParameters["password"]}",
-                { response ->
-                    chartFragment.setData(Gson().fromJson(response, Array<SensorData>::class.java))
-                },
-                { }
-        )
-        val valveRequest = StringRequest(
-                Request.Method.GET,
-                "$hostname/cultivates/api/valve?password=${httpParameters["password"]}",
-                { response ->
-                    run {
-                        val valveData = Gson().fromJson(response, Array<ValveData>::class.java)
-                        val sdf = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
-                        val date = java.util.Date(valveData.first().lastTimeWatered * 1000)
-                        lastTimeWateredText.text = sdf.format(date)
-                    }
-                },
-                { }
-        )
 
-        queue.add(sensorRequest)
-        queue.add(valveRequest)
+        queue.add(makeFullSensorRequest())
+        queue.add(makeValveRequest())
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -130,7 +108,7 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
         }
     }
 
-    fun makeSensorRequest(url: String, endpointObject: EndpointDefinition) {
+    private fun makeSensorRequest(url: String, endpointObject: EndpointDefinition) {
         val queue = Volley.newRequestQueue(this)
 
         val httpRequest = StringRequest(
@@ -155,6 +133,8 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
                                 val responseObject = Gson().fromJson(response, Array<SensorData>::class.java)
                                 dialogMessage += "Sensor ${responseObject[0].id} reports a moisture of ${BigDecimal(((responseObject[0].value / 1023.0f).coerceAtMost(1.0f) * 100.0f).toDouble()).setScale(1, RoundingMode.CEILING)}%."
                             }
+
+                            else -> {}
                         }
 
                         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
@@ -167,15 +147,19 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
                         alert.show()
                     }
                 },
-                { Toast.makeText(applicationContext, "API Reuqest failed\nFor details, check logs", Toast.LENGTH_LONG).show() })
+                {
+                    kotlin.run {
+                        showErrorDialog()
+                    }
+                }
+        )
 
         queue.add(httpRequest)
     }
 
-    fun makeValveRequest(url: String, endpointObject: EndpointDefinition) {
+    private fun makeValveRequest(url: String, endpointObject: EndpointDefinition) {
         try {
             val requestQueue = Volley.newRequestQueue(this)
-            val URL = url
             val valveData = ValveData()
             valveData.apply {
                 id = 1
@@ -186,7 +170,7 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
             val requestBody = Gson().toJson(valveData)
             val stringRequest: StringRequest = object : StringRequest(
                     Method.POST,
-                    URL,
+                    url,
                     Response.Listener
                     {
                         run {
@@ -203,7 +187,9 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
 
                     Response.ErrorListener
                     {
-                        error -> Log.e("VOLLEY", error.toString())
+                        kotlin.run {
+                            showErrorDialog()
+                        }
                     }
             )
             {
@@ -217,10 +203,7 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
                 }
 
                 override fun parseNetworkResponse(response: NetworkResponse): Response<String> {
-                    var responseString = ""
-                    if (response != null) {
-                        responseString = response.statusCode.toString()
-                    }
+                    val responseString = response.statusCode.toString()
                     return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response))
                 }
             }
@@ -244,16 +227,60 @@ class MainActivity : AppCompatActivity(), INFCCallbacks, SwipeRefreshLayout.OnRe
     override fun onRefresh() {
         //Do http request for sensor data on refresh
         val queue = Volley.newRequestQueue(this)
-        val httpRequest = StringRequest(
-                Request.Method.GET,
-                "$hostname/cultivates/api/sensors?password=${httpParameters["password"]}",
-                { response ->
-                    chartFragment.setData(Gson().fromJson(response, Array<SensorData>::class.java))
-                    swipeRefreshLayout.isRefreshing = false
-                },
-                {}
-        )
 
-        queue.add(httpRequest)
+        queue.add(makeFullSensorRequest())
+        queue.add(makeValveRequest())
+    }
+
+    private fun showErrorDialog() {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+        builder.setTitle(getString(R.string.dialog_network_fail_headline))
+        builder.setMessage(getString(R.string.dialog_network_fail_content))
+        builder.setCancelable(false)
+        builder.setPositiveButton(getString(R.string.dialog_positive_button)) { dialog, _ ->
+            run {
+                dialog.cancel()
+                swipeRefreshLayout.isRefreshing = false
+            }
+        }
+
+        val alert: AlertDialog = builder.create()
+        alert.show()
+    }
+
+    private fun makeFullSensorRequest(): StringRequest {
+        return StringRequest(
+            Request.Method.GET,
+            "$hostname/cultivates/api/sensors?password=${httpParameters["password"]}",
+            { response ->
+                chartFragment.setData(Gson().fromJson(response, Array<SensorData>::class.java))
+                swipeRefreshLayout.isRefreshing = false
+            },
+            {
+                kotlin.run {
+                    showErrorDialog()
+                }
+            }
+        )
+    }
+
+    private fun makeValveRequest(): StringRequest {
+        return StringRequest(
+            Request.Method.GET,
+            "$hostname/cultivates/api/valve?password=${httpParameters["password"]}",
+            { response ->
+                run {
+                    val valveData = Gson().fromJson(response, Array<ValveData>::class.java)
+                    val sdf = java.text.SimpleDateFormat(getString(R.string.last_time_watered_format))
+                    val date = java.util.Date(valveData.first().lastTimeWatered * 1000)
+                    lastTimeWateredText.text = sdf.format(date)
+                }
+            },
+            {
+                kotlin.run {
+                    showErrorDialog()
+                }
+            }
+        )
     }
 }
